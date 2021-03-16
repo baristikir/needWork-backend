@@ -1,17 +1,14 @@
-export interface IUser {
+export interface IBusinessUser {
   _id: string;
   name: string;
   email: string;
   phoneNumber: string;
   prefix: string;
-  password?: string;
-  salt: string;
 }
 
-export interface IUserInputDTO {
+export interface IBusinessUserInputDTO {
   name: string;
   email: string;
-  password?: string;
   phoneNumber: string;
   prefix: string;
 }

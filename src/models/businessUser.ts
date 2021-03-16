@@ -1,14 +1,13 @@
-import { IUser } from '../interfaces/IUser';
 import mongoose from 'mongoose';
+import { IBusinessUser } from '../interfaces/IBusinessUser';
 
-const User = new mongoose.Schema(
+const BusinessUser = new mongoose.Schema(
   {
     name: {
       type: String,
       required: [true, 'Please enter a full name'],
       index: true,
     },
-
     email: {
       type: String,
       lowercase: true,
@@ -23,17 +22,8 @@ const User = new mongoose.Schema(
     prefix: {
       type: String,
     },
-
-    password: String,
-
-    salt: String,
-
-    role: {
-      type: String,
-      default: 'user',
-    },
   },
   { timestamps: true },
 );
 
-export default mongoose.model<IUser & mongoose.Document>('User', User);
+export default mongoose.model<IBusinessUser & mongoose.Document>('BusinessUser', BusinessUser);
