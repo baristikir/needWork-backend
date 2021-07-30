@@ -54,7 +54,8 @@ export default {
    * API configs
    */
   api: {
-    prefix: '/api',
+    restPrefix: '/api',
+    graphqlPrefix: '/graphql',
   },
   /**
    * Mailgun email credentials

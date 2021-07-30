@@ -1,0 +1,7 @@
+type BusinessUser {
+  id: ID!
+  name: String!
+  email: String!
+  phoneNumber: String!
+  prefix: String!
+}

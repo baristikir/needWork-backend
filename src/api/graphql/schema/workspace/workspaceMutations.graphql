@@ -1,0 +1,19 @@
+extend type Mutation {
+  createWorkspace(
+    name: String!
+    category: String!
+    address: String!
+    city: String!
+    openingHours: [Int]
+    creator: BusinessUser!
+  ): Workspace @isAuthenticated
+  updateWorkspace(
+    id: ID!
+    name: String!
+    category: String!
+    address: String!
+    city: String!
+    openingHours: [Int]
+  ): Workspace @isAuthenticated
+  deleteWokrspace(id: ID!): ID @isAuthenticated
+}

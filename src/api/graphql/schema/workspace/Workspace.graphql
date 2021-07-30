@@ -1,0 +1,11 @@
+type Workspace {
+  id: ID!
+  title: String!
+  category: String!
+  address: String!
+  city: String!
+  openingHours: [Int]
+  creator: BusinessUser!
+  created: DateTime!
+  lastChanged: DateTime!
+}
